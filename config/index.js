@@ -4,7 +4,6 @@ module.exports = {
         // 注意:路径都是相对于 src 的路径
         stylus: './js/page/stylus.js',
         less: './js/page/less.js',
-        sass: './js/page/sass.js',
         scss: './js/page/scss.js',
     }
 }
