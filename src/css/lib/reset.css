@@ -20,3 +20,7 @@ a:hover{text-decoration:none;}
   height: 0;
   visibility: hidden;
 }
+
+hr{
+  margin: 10px 0;
+}

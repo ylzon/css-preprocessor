@@ -14,7 +14,7 @@ module.exports = merge(BaseWebpackConfig,{
     },
     plugins:[
         new OpenBrowserPlugin({
-            url: 'http://localhost:9001/',
+            url: 'http://localhost:9001/scss.html',
         })
     ]
 })
