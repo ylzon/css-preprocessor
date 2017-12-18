@@ -64,7 +64,7 @@ $extend: yellowgreen;
 }
 .color a{
   text-decoration: none;
-  color: #ccc;
+  color: #666666;
 }
 section.s6{
   div {
@@ -153,11 +153,113 @@ section.s6{
 // 10.Interpolation 插值
 $nest: yellowgreen;
 $no: "10";
-$border-pos: "left";
+$border-postion: "left";
 section.s#{$no} {
   div {
     height: 50px;
     background-color: lighten($nest, 10%);
-    border-#{$border-pos}: 1px solid red;
+    border-#{$border-postion}: 3px solid #666666;
   }
+}
+
+// 11.@if 选择语句
+$if_color: pink;
+$use_prefixes: true;
+section.s11 {
+  div {
+    height: 50px;
+    background-color: $if_color;
+    opacity: 0.9;
+    @if $use_prefixes{
+      filter:alpha(opacity=90);      /* IE */
+      -khtml-opacity:0.9;            /* 老版Safari */
+      -moz-opacity:0.9;              /* 老版Mozilla */
+    }
+  }
+}
+
+// 12.@for 有序循环语句 
+$if_color: yellow;
+$columns: 6;
+section.s12 {
+  height: 50px;
+  background-color: $if_color;
+  display: block!important;
+  div {
+    // [through] 1-6
+    @for $i from 1 through $columns{
+      .col-through-#{$i} {
+        width: 100% / $columns * $i;
+      }
+    }
+    // [to] 1-5
+    @for $i from 1 to $columns{
+      .col-to-#{$i} {
+        width: 100% / $columns * $i;
+      }
+    }
+  }
+}
+
+// 13.@each 无序循环语句 
+$if_color: rgb(0, 153, 255);
+$icons: success info error;
+$each_width: 50px;
+section.s13 {
+  height: 50px;
+  background-color: $if_color;
+  div{
+    @each $icon in $icons{
+      .icon-#{$icon} {
+        height: $each_width;
+        width: $each_width;
+        display: inline-block;
+        background: url('../img/#{$icon}.png') no-repeat 0 0;
+        background-size: $each_width $each_width;
+      }
+    }
+  }
+}
+
+// 14.while 条件循环
+$while_color: rgb(212, 0, 255);
+$item: 6;
+section.s14 {
+  height: 50px;
+  background-color: $while_color;
+  div{
+    @while $item > 0{
+      .item-#{$item} {
+        width: 5px * $item;
+      }
+      $item: $item - 2;
+    }
+  }
+}
+
+
+// 15.function 自定义函数
+$colors: (light:rgb(145, 255, 0), dark:rgb(1, 39, 25));
+@function color($key) {
+  @return map-get($colors, $key);
+}
+section.s15 {
+  height: 50px;
+  background-color: color(light);
+}
+
+// 16.错误提示信息
+$colors: (light:rgb(0, 255, 157), dark:rgb(1, 39, 25));
+@function color($key) {
+  @if not map-has-key($colors, $key){
+    // [warn] 不会中断，但是会提示
+    @warn "不存在#{$key}这个key";
+    // [error] 会中断编译操作
+    @error "不存在#{$key}这个key";
+  }
+  @return map-get($colors, $key);
+}
+section.s16 {
+  height: 50px;
+  background-color: color(light);
 }

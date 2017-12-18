@@ -33,6 +33,7 @@ module.exports = {
     entry: config.pages,
     output: {
         path: path.join(__dirname, 'dist'),
+        // publicPath: 'cdn',
         filename: ASSETS_PUBLIC_PATH + 'js/[name].[chunkhash:8].js'
     },
     module: {
@@ -71,8 +72,10 @@ module.exports = {
                 use: [{
                     loader: 'file-loader',
                     options: {
-                        limit: 2048,
-                        name: ASSETS_PUBLIC_PATH + 'img/[name].[hash:8].[ext]'
+                        outputPath: ASSETS_PUBLIC_PATH + '/img/',
+                        useRelativePath:true,
+                        limit: 8192,
+                        name: '[name].[hash:8].[ext]'
                     }
                 }]
             },
@@ -82,8 +85,10 @@ module.exports = {
                 use: [{
                     loader: 'file-loader',
                     options: {
-                        limit: 2048,
-                        name: ASSETS_PUBLIC_PATH + 'fonts/[name].[ext]'
+                        limit: 8192,
+                        outputPath: ASSETS_PUBLIC_PATH + '/fonts/',
+                        useRelativePath:true,
+                        name: '[name].[ext]'
                     }
                 }]
             },
