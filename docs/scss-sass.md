@@ -2,7 +2,7 @@
 
 ## 扩展名
 * Sass文件名后缀为.sass
-* SCSS文件后缀名为.scss
+* SCSS文件后缀名为.scss
 
 ## 整体写法
 * Sass属于缩进式写法，能简则简
