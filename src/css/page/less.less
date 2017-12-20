@@ -1,20 +1,478 @@
-.text{
-  padding: 20px 0;
-  font-size: 18px;
-  color:#f63;
+// s1. 变量
+@var: #aaf16f;
+section.s1 div{
+  height: 50px;
+  background-color: @var;
 }
-.btn{
-  width: 120px;
-  height: 36px;
-  line-height: 36px;
-  background-color: #677D7C;
-  color:#fff;
-  text-align: center;
-  border:none;
-  box-shadow: 0 1px 3px #999;
-  font-size: 16px;
+
+// s2.变量插值 - 选择器
+@inter_sele: #b6b1ff;
+@no: s2;
+section.@{no} div{
+  height: 50px;
+  background-color: @inter_sele;
+}
+
+// s3.变量插值 - 属性
+@inter_attr: #b1fff5;
+@attr: height;
+section.s3 div{
+  @{attr}: 50px;
+  background-color: @inter_attr;
+}
+
+// s4.变量插值 - URLs
+@inter_urls: "../img";
+section.s4 div{
+  height: 50px;
+  background: #ffb1f5 url("@{inter_urls}/success.png") no-repeat 145px 0;
+  background-size: 15px 15px;
+}
+
+// s5.变量插值 - import
+@common: "../common";
+@import "@{common}/less/base"; // .less后缀名可选
+
+// s6.变量插值 - 变量插变量
+@colors: #b7ffb1;
+@bgc: colors;
+section.s6 div{
+  height: 50px;
+  background-color: @@bgc;
+}
+
+// s7.变量 - 延迟加载 & 默认变量
+/* 变量是延迟加载的，在使用前不一定要预先声明
+   相同声明的变量，以后声明的为准 */
+
+@base-color: green;
+@dark-color: darken(@base-color, 10%);
+section.s7 div{
+  height: 50px;
+  background-color: @dark-color;
+}
+@base-color: rgb(181, 219, 250);
+
+// s8.Extend - 扩展语法
+.bgcolor{
+  background-color: #b7ca0e;
+}
+.bgcolor a{
+  text-underline: none;
+  color: #6b075e;
+}
+section.s8 div{
+  height: 50px;
+  // all会继承所有.bgcolor所属的实例， 如继承.bgcolor a
+  &:extend(.bgcolor all);
+}
+// s9.Extend - 选择器扩展
+.a-hover{
+  color: #ffffff;
+}
+.bgcolor-a:hover:extend(.a-hover){
   cursor: pointer;
 }
-.img{
-  margin-top: 20px;
+section.s9 div{
+  height: 50px;
+  background-color: rgb(28, 206, 197);
+  &:extend(.bgcolor-a all);
 }
+
+// s10.Extend - 规则集内的扩展
+.rules{
+  color:#ffffff;
+}
+section.s10:hover, section.s10 div{
+  height: 50px;
+  background-color: rgb(28, 206, 67);
+  &:extend(.rules);
+}
+/*等价于：
+  section.s10:hover:extend(.rules){...}
+  section.s10 div:extend(.rules){...}
+*/
+
+// s11.Extend - 嵌套选择器中的扩展
+.bucket {
+  tr {
+    color: blue;
+  }
+}
+/* 从本质上将extend会查找编译后的CSS，而不是原始的less
+   如：`.some-class:extend(tr .bucket) {}`。*/
+.some-class:extend(.bucket tr) {} 
+
+// s12.Extend - 扩展中的精确匹配
+.a.class,    // 不会匹配
+.class.a,    // 不会匹配
+.class > .a, // 不会匹配
+*.class{     // 不会匹配，虽然选择器*.class和.class是等价的
+  color: blue;
+}
+.test:extend(.class) {} 
+
+// 顺序不同也不会匹配
+link:hover:visited {
+  color: blue;
+}
+.selector:extend(link:visited:hover) {} 
+
+// 不会匹配，尽管1n+3和n+3是等价的
+:nth-child(1n+3) {
+  color: blue;
+}
+.child:extend(:nth-child(n+3)) {} 
+
+// 分别按对应的引号匹配
+[title=identifier] {
+  color: blue;
+}
+[title='identifier'] {
+  color: blue;
+}
+[title="identifier"] {
+  color: blue;
+}
+.noQuote:extend([title=identifier]) {}
+.singleQuote:extend([title='identifier']) {}
+.doubleQuote:extend([title="identifier"]) {}
+
+
+// s13.Extend - nth表达式
+/* [all] 关键词 .replacement:extend(.test all) {}
+ * 当你在extend参数的最后面指定all关键字时，它会告诉告诉匹配作为其他选择器一部分的选择器。
+ * 这个选择器会被复制，然后匹配的选择器部分会使用扩展替换，创建一个新的选择器。
+ */
+ .a.b.test,
+ .test.c {
+   color: orange;
+ }
+ .test {
+   &:hover {
+     color: green;
+   }
+ }
+ 
+ .replacement:extend(.test all) {}
+
+ // 输出
+ .a.b.test,
+.test.c,
+.a.b.replacement,
+.replacement.c {
+  color: orange;
+}
+.test:hover,
+.replacement:hover {
+  color: green;
+}
+
+// s13.Extend - 扩展中的选择器插值
+
+@variable: .bucket;
+@{variable} { // 插值选择器
+  color: blue;
+}
+// 以下两种形式的带变量的插值扩展都不会匹配
+.some-class:extend(.bucket) {}  
+.some-class:extend(@{variable}) {} 
+
+// 只有:extend 附加给插值选择器可以工作
+.bucket {
+  color: blue;
+}
+@{variable}:extend(.bucket) {}
+@variable: .selector;
+
+// s14.Extend - 作用域/@media内的扩展
+@media print {
+  .screenClass:extend(.selector) {} // media内的extend
+  .selector { // 这个会匹配到-因为在同一的media内
+    color: black;
+  }
+}
+.selector { // 定义样式表中的规则 - extend会忽略它
+  color: red;
+}
+@media screen {
+  .selector {  // 另一个media声明内的规则 - extend也会忽略它
+    color: blue;
+  }
+}
+
+// 编写在media声明内的extend不会匹配嵌套声明内的选择器
+@media screen {
+  .screenClass:extend(.selector) {} // media内的extend - extend会忽略它
+  @media (min-width: 1023px) {
+    .selector {  // 嵌套media内的规则 
+      color: blue;
+    }
+  }
+}
+
+// 顶级extend匹配一切，包括media嵌套内的选择器
+@media screen {
+  .selector {  /* media嵌套内的规则 - 顶级extend正常工作 */
+    color: blue;
+  }
+  @media (min-width: 1023px) {
+    .selector {  /* media嵌套内的规则 - 顶级extend正常工作 */
+      color: blue;
+    }
+  }
+}
+
+.topLevel:extend(.selector) {} /* 顶级extend匹配一切 */
+
+/*以上林林总总，总结为：
+ * 1. 优先匹配作用域内部的实例
+ * 2. 当前作用域的扩展不会匹配自己内部的实例
+ * 3. 顶级作用域的扩展会匹配所有选择器
+ * 4. 当前没有会向上级作用域匹配
+ */
+
+// s15.Extend - 检测重复
+// 目前还没有重复检测，但是压缩后的代码会自动省去重复的选择器
+.alert-info,
+.widget {
+  color: red;
+}
+.alert:extend(.alert-info, .widget) {}
+
+
+// s16.Extend - CSS归并
+
+// 使用mixins会让扩展的类消失
+.my-inline-block {
+  display: inline-block;
+  font-size: 0;
+}
+.thing1 {
+  &:extend(.my-inline-block);
+}
+.thing2 {
+  &:extend(.my-inline-block);
+}
+// 编译后
+.my-inline-block,
+.thing1,
+.thing2 {
+  display: inline-block;
+  font-size: 0;
+}
+
+// s17.Mixins - 混合
+.a, #b {
+  color: red;
+}
+.mixin-class {
+  .a();
+}
+.mixin-id {
+  #b; // 括号可加可不加
+}
+
+// s18.Mixins - 不输出混合集
+.my-mixin {
+  color: black;
+}
+// 可以在混合集的名字后面加上一个括号，这样就可以不用输出到你的样式中
+.my-other-mixin() {
+  background: white;
+}
+.class {
+  .my-mixin;
+  .my-other-mixin;
+}
+
+// s19.Mixins - 带选择器的混合集
+.my-hover-mixin() {
+  &:hover {
+    border: 1px solid red;
+  }
+}
+button {
+  .my-hover-mixin();
+}
+
+// s20.Mixins - 命名空间
+#my-library {
+  .my-mixin() {
+    color: black;
+  }
+}
+// 可以这样调用,避免和其他库冲突
+.class {
+  // 四种写法效果一致
+  #my-library > .my-mixin();
+  #my-library > .my-mixin;
+  #my-library .my-mixin();
+  #my-library .my-mixin;
+}
+
+// s21.Mixins - !important 关键字
+.foo (@bg: #f5f5f5, @color: #900) {
+  background: @bg;
+  color: @color;
+}
+.unimportant {
+  .foo();
+}
+.important {
+  // 在调用的混合集后面追加 !important 关键字，可以使混合集里面的所有属性都继承 !important
+  .foo() !important;
+}
+
+// s22.传参Mixins - 带参数的混合
+// 参数可以设置默认值
+.border-radius(@radius: 5px) {
+  -webkit-border-radius: @radius;
+     -moz-border-radius: @radius;
+          border-radius: @radius;
+}
+.button {
+  // 如果有默认值，此处可省去，若无，必须传参
+  .border-radius();
+}
+
+
+// s23.传参Mixins - 带多个参数的mixins
+/**
+参数可以用分号或者逗号分割。但是推荐使用分号分割。因为逗号符号有两个意思：它可以解释为mixins参数分隔符或者css列表分隔符。
+两个参数，并且每个参数都是逗号分割的列表：.name(1,2,3;something, ele)，
+三个参数，并且每个参数都包含一个数字：.name(1,2,3)，
+使用伪造的分号创建mixin，调用的时候参数包含一个逗号分割的css列表：.name(1,2,3;)，
+逗号分割默认值：.name(@param1: red, blue)。
+*/
+.mixin(@color) {
+  color-1: @color;
+}
+.mixin(@color; @padding: 2) {
+  color-2: @color;
+  padding-2: @padding;
+}
+.mixin(@color; @padding; @margin: 2) {
+  color-3: @color;
+  padding-3: @padding;
+  margin: @margin @margin @margin @margin;
+}
+.some .selector div {
+  .mixin(#008000);
+}
+
+// s23.传参Mixins - 命名参数
+.mixins(@color: black; @margin: 10px; @padding: 20px) {
+  color: @color;
+  margin: @margin;
+  padding: @padding;
+}
+.class1 {
+  .mixins(@margin: 20px; @color: #33acfe);
+}
+.class2 {
+  .mixins(#efca44; @padding: 40px);
+}
+
+// s23.传参Mixins - @arguments 变量
+.box-shadow(@x: 0; @y: 0; @blur: 1px; @color: #000) {
+  // 调用mixin时，它包含所有传入的参数
+  -webkit-box-shadow: @arguments;
+     -moz-box-shadow: @arguments;
+          box-shadow: @arguments;
+}
+.big-block {
+  .box-shadow(2px; 5px);
+}
+
+// s23.传参Mixins - 高级参数和@rest变量
+.mixin(...) {        /* 匹配 0-N 参数*/ }
+.mixin() {           /* 匹配  0  参数*/ }
+.mixin(@a: 1) {      /* 匹配 0-1 参数*/ }
+.mixin(@a: 1; ...) { /* 匹配 0-N 参数*/ }
+.mixin(@a; ...) {    /* 匹配 1-N 参数*/ }
+.mixin(@a; @rest...) {
+  // @rest...绑定参数@a
+  // @arguments 绑定所有参数
+}
+
+// s23.传参Mixins - 高级参数和@rest变量
+// 第一个mixin定义并没有匹配，因为它期望第一个参数是dark。
+.mixin(dark; @color) {
+  color: darken(@color, 10%);
+}
+
+// 第二个mixin定义匹配了，因为它接受的参数是预期的light。
+.mixin(light; @color) {
+  color: lighten(@color, 10%);
+}
+// 第三个mixin定义也匹配了，因为它任何值都在其预料只用
+.mixin(@_; @color) {
+  display: block;
+}
+// 调用
+@switch: light;
+.class {
+  .mixin(@switch; #888);
+}
+
+// 输出
+.class {
+  color: #a2a2a2;
+  display: block;
+}
+
+
+// s24.Function & Mixins - 作为函数使用的混合
+// 调用作用域, 实现函数声明变量，防止全局变量污染
+.mixin() {
+  @width:  100%;
+  @height: 200px;
+}
+.caller {
+  .mixin();
+  width:  @width;
+  height: @height;
+}
+
+// 定义在mixin中的变量还可以充当它的返回值
+.average(@x, @y) {
+  @average: ((@x + @y) / 2);
+}
+p {
+  .average(16px, 50px); 
+  padding: @average;   
+}
+
+// 定义变在量调用者父级作用域内的变量是不是受保护的，将被重写
+.mixin() {
+  @size: in-mixin; 
+  @definedOnlyInMixin: in-mixin;
+}
+.class {
+  margin: @size @definedOnlyInMixin;
+  .mixin(); 
+}
+@size: globaly-defined-value; // 调用者父级作用域 - 不受保护
+// 输出
+.class {
+  margin: in-mixin in-mixin;
+}
+
+// 定义在mixin中的mixin同样可以作为返回值
+.unlock(@value) { // 外层的 mixin
+  .doSomething() { // 被嵌套的 mixin
+    declaration: @value;
+  }
+}
+#namespace {
+  .unlock(5); // unlock doSomething mixin
+  .doSomething(); //嵌套混入被复制到这里，并可用
+}
+// 输出
+#namespace {
+  declaration: 5;
+}
+
+
+// s25.Passing Rulesets to Mixins - 传递规则集给混合

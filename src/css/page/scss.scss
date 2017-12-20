@@ -1,5 +1,5 @@
 // s1. 变量
-$variable: #666666;
+$variable: #a1aaf8;
 section.s1 div{
   height: 50px;
   background-color: $variable;
@@ -15,7 +15,7 @@ section.s2{
 }
 
 // s3.嵌套调用父选择器
-$nest_f: blue;
+$nest_f: rgb(213, 175, 228);
 section.s3{
   div {
     height: 50px;
