@@ -476,3 +476,40 @@ p {
 
 
 // s25.Passing Rulesets to Mixins - 传递规则集给混合
+// 声明 detached 规则集合
+@detached-ruleset: { 
+  background: red;
+ };
+
+// 使用 detached 规则集合
+.top {
+    @detached-ruleset(); 
+}
+
+// 定义一个mixin将一个媒体查询中的一个代码块或者一个浏览器不支持的类名抽象出来
+.desktop-and-old-ie(@rules) {
+  @media screen and (min-width: 1200) { @rules(); }
+  html.lt-ie9 & { @rules(); }
+}
+// 规则集合可以传递规则集给mixin，所以该mixin会包装这些内容
+header {
+  background-color: blue;
+
+  .desktop-and-old-ie({
+    background-color: red;
+  });
+}
+
+
+// 可以使用@media查询
+@my-ruleset: {
+  .my-selector {
+    @media tv {
+      background-color: black;
+    }
+  }
+};
+@media (orientation:portrait) {
+  @my-ruleset();
+}
+
